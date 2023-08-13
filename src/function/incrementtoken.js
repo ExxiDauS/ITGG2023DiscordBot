@@ -9,6 +9,8 @@ async function incrementtoken(token, gateid) {
         .then((res) => {
             if (res.ok) {
                 console.log(`${token} Token has been added`);
+            } else if (!res.ok) {
+                return false;
             }
         })
 }

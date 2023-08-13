@@ -1,8 +1,7 @@
 async function getgateinfo(gatename) {
     try {
         let req = await fetch('https://itgg-core.iservkmitl.tech/api/v1/gates');
-        if (req.ok) {
-        }
+        if (!req.ok) {return false}
         let reqj = await req.json();
         let result
         reqj.items.forEach(element => {

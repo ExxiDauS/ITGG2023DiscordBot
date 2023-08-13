@@ -27,6 +27,9 @@ module.exports = {
    * @param {ChatInputCommandInteraction} interactin
    */
   async execute(interactin) {
+    if (!getstudentinfo) {
+      await interactin.reply({ content: "Error please contact support", ephemeral: true })
+    }
     await interactin.deferReply({ ephemeral: true });
     console.time("Wheel");
     let studentinfo = await getstudentinfo(
@@ -43,6 +46,9 @@ function getRndInteger(min, max) {
 }
 
 async function givefunc(rndnum, gate) {
+  if (!incrementtoken) {
+    await interactin.reply({ content: "Error please contact support", ephemeral: true })
+  }
   try {
     let gateinfo = await getgateinfo(gate);
     let description = "";
