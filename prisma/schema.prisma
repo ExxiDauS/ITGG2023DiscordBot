@@ -12,5 +12,11 @@ model Player {
   fullname String
   gate     String
   id_      Int    @map("id")
+}
+model gameLog {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id_      Int    @map("id")
+  playerID String
+  game String
   playedAt DateTime @default(now())
 }

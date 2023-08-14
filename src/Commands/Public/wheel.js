@@ -41,24 +41,16 @@ module.exports = {
         async function playerat(){
           const startDay = new Date().setHours(0, 0, 0, 0);
           const endDay = new Date().setHours(23, 59, 59, 999);
-          // await prisma.player.update({
-          //   data:{
-          //     playedAt:{
-          //       gte: new Date(startDay),
-          //       lte: new Date(endDay),
-          //     },
-          //   }
-          // })
-          const quota = await prisma.player.findMany({
+          const quota = await prisma.gameLog.findMany({
             where:{
               id_: studentinfo.id,
               playedAt:{
                 gte: new Date(startDay),
-                lte: new Date(endDay),
+                lte: new Date(endDay)
               }
-            },
+            }
           })
-          console.log(quota)
+          console.log(quota.playedAt)
           console.log(quota.length > 3 ? 'Full Quota' : 'Not Full Quota');
           if (quota.length > 3) {return false};
         };
