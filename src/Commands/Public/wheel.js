@@ -27,9 +27,8 @@ module.exports = {
    * @param {ChatInputCommandInteraction} interactin
    */
   async execute(interactin) {
-    if (!getstudentinfo) {
-      await interactin.reply({ content: "Error please contact support", ephemeral: true })
-    }
+    if (!playerat) {await interactin.reply({content: "You're out of quota for today!, Come back later!!", ephemeral: true}); return};
+    if (!getstudentinfo) {await interactin.reply({ content: "Error please contact support", ephemeral: true }); return};
     await interactin.deferReply({ ephemeral: true });
     console.time("Wheel");
     let studentinfo = await getstudentinfo(
@@ -38,6 +37,32 @@ module.exports = {
     let gain = await givefunc(getRndInteger(1, 10), studentinfo.gate);
     await interactin.editReply({ embeds: [gain], ephemeral: true });
     console.timeEnd("Wheel");
+        //count player Attempt
+        async function playerat(){
+          const startDay = new Date().setHours(0, 0, 0, 0);
+          const endDay = new Date().setHours(23, 59, 59, 999);
+          // await prisma.player.update({
+          //   data:{
+          //     playedAt:{
+          //       gte: new Date(startDay),
+          //       lte: new Date(endDay),
+          //     },
+          //   }
+          // })
+          const quota = await prisma.player.findMany({
+            where:{
+              id_: studentinfo.id,
+              playedAt:{
+                gte: new Date(startDay),
+                lte: new Date(endDay),
+              }
+            },
+          })
+          console.log(quota)
+          console.log(quota.length > 3 ? 'Full Quota' : 'Not Full Quota');
+          if (quota.length > 3) {return false};
+        };
+        playerat()
   },
 };
 
