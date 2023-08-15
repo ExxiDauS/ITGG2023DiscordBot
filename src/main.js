@@ -5,6 +5,7 @@ const {
   Collection,
 } = require("discord.js");
 require("dotenv").config();
+const mongoose = require('mongoose')
 const client = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
@@ -21,6 +22,9 @@ client.commands = new Collection();
 
 (async () => {
   try {
+    mongoose.set('strictQuery',false);
+    await mongoose.connect(process.env.DATABASE_URL);
+    console.log("Database connected!")
     loadEvents(client);
   } catch (error) {
     console.log(error);

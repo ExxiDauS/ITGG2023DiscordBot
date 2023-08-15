@@ -10,6 +10,8 @@ const { getgateinfo } = require("../../function/getgateinfo");
 const { getstudentinfo } = require("../../function/getstudentinfo");
 const { incrementtoken } = require("../../function/incrementtoken");
 const { PrismaClient } = require("@prisma/client");
+const mongoose = require('mongoose');
+const Gamelog = require('../../models/playerdata')
 const prisma = new PrismaClient();
 
 module.exports = {
@@ -26,35 +28,24 @@ module.exports = {
    *
    * @param {ChatInputCommandInteraction} interactin
    */
+
+
+
   async execute(interactin) {
-    if (!playerat) {await interactin.reply({content: "You're out of quota for today!, Come back later!!", ephemeral: true}); return};
-    if (!getstudentinfo) {await interactin.reply({ content: "Error please contact support", ephemeral: true }); return};
     await interactin.deferReply({ ephemeral: true });
-    console.time("Wheel");
     let studentinfo = await getstudentinfo(
       interactin.options.getString("studentid")
     );
+    let playerplay = await playerat(studentinfo, 3);
+    if (!playerplay) { await interactin.editReply({ content: "You're out of quota for today!, Come back later!!", ephemeral: true }); return };
+    if (!getstudentinfo) { await interactin.editReply({ content: "Error please contact support", ephemeral: true }); return };
+
+    console.time("Wheel");
+
     let gain = await givefunc(getRndInteger(1, 10), studentinfo.gate);
     await interactin.editReply({ embeds: [gain], ephemeral: true });
     console.timeEnd("Wheel");
-        //count player Attempt
-        async function playerat(){
-          const startDay = new Date().setHours(0, 0, 0, 0);
-          const endDay = new Date().setHours(23, 59, 59, 999);
-          const quota = await prisma.gameLog.findMany({
-            where:{
-              id_: studentinfo.id,
-              playedAt:{
-                gte: new Date(startDay),
-                lte: new Date(endDay)
-              }
-            }
-          })
-          console.log(quota.playedAt)
-          console.log(quota.length > 3 ? 'Full Quota' : 'Not Full Quota');
-          if (quota.length > 3) {return false};
-        };
-        playerat()
+    //count player Attempt
   },
 };
 
@@ -62,9 +53,37 @@ function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+async function playerat(studentinfo, quotamax) {
+  const startDay = new Date().setHours(0, 0, 0, 0);
+
+  const endDay = new Date().setHours(23, 59, 59, 999);
+  try {
+    let query = {
+      studentID: studentinfo.id,
+      playedAt: new Date(startDay),
+    }
+    const quota = await Gamelog.find(query).exec();
+    console.log(quota)
+    console.log(quota.length >= quotamax ? 'Full Quota' : `Not full quota (${quota.length}/${quotamax})`);
+    if (quota.length >= quotamax) {
+      return false
+    } else {
+      let newlog = new Gamelog({
+        studentID: studentinfo.id,
+        playedAt: new Date(startDay),
+      })
+      await newlog.save();
+      return true;
+    }
+
+  } catch (error) {
+    console.log(error)
+  }
+};
+
 async function givefunc(rndnum, gate) {
   if (!incrementtoken) {
-    await interactin.reply({ content: "Error please contact support", ephemeral: true })
+    await interactin.editReply({ content: "Error please contact support", ephemeral: true })
   }
   try {
     let gateinfo = await getgateinfo(gate);
